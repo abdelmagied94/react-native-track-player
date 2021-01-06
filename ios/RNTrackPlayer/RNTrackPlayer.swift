@@ -259,7 +259,13 @@ public class RNTrackPlayer: RCTEventEmitter {
         hasInitialized = true
         resolve(NSNull())
     }
-    
+
+    @objc(isServiceRunning:rejecter:)
+    public func isServiceRunning(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+        // TODO That is probably always true
+        resolve(player != nil)
+    }
+
     @objc(destroy)
     public func destroy() {
         print("Destroying player")
@@ -486,6 +492,12 @@ public class RNTrackPlayer: RCTEventEmitter {
     @objc(getState:rejecter:)
     public func getState(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
         resolve(player.playerState.rawValue)
+    }
+    
+    @objc(getCurrentTrackMeta:rejecter:)
+    public func getCurrentTrackMeta(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+        let data = ["id": (player.currentItem as? Track)?.id, "position": player.currentTime] as [String : Any]
+        resolve(data)
     }
     
     @objc(updateMetadataForTrack:properties:resolver:rejecter:)

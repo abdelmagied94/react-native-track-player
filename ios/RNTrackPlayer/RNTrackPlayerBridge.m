@@ -15,6 +15,9 @@ RCT_EXTERN_METHOD(setupPlayer:(NSDictionary *)data
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject);
 
+RCT_EXTERN_METHOD(isServiceRunning:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject);
+
 RCT_EXTERN_METHOD(destroy);
 
 RCT_EXTERN_METHOD(updateOptions:(NSDictionary *)options
@@ -95,6 +98,9 @@ RCT_EXTERN_METHOD(getPosition:(RCTPromiseResolveBlock)resolve
 RCT_EXTERN_METHOD(getState:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject);
 
+RCT_EXTERN_METHOD(getCurrentTrackMeta:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject);
+  
 RCT_EXTERN_METHOD(updateMetadataForTrack:(NSString *)trackId
                   properties:(NSDictionary *)properties
                   resolver:(RCTPromiseResolveBlock)resolve
