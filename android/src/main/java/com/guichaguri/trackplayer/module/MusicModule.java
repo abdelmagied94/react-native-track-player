@@ -33,6 +33,8 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
     private ArrayDeque<Runnable> initCallbacks = new ArrayDeque<>();
     private boolean connecting = false;
     private Bundle options;
+    private static final String PLAYBACK_NOT_INITIALIZED_ERROR = "PLAYBACK_NOT_INITIALIZED";
+    private static final String PLAYBACK_NOT_INITIALIZED_MSG = "The playback is not initialized";
 
     public MusicModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -123,7 +125,7 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
         if(isBinderReady()) {
             binder.post(r);
         } else {
-            callback.reject("playback", "The playback is not initialized");
+            rejectWithNotInitializedError(callback);
         }
     }
 
@@ -184,14 +186,14 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
     public synchronized void destroy() {
         try {
             synchronized(this) {
-                if(binder != null) {
+                if (binder != null) {
                     binder.destroy();
                     binder = null;
                 }
             }
 
             ReactContext context = getReactApplicationContext();
-            if(context != null) context.unbindService(this);
+            if (context != null) context.unbindService(this);
         } catch(Exception ex) {
             // This method shouldn't be throwing unhandled errors even if something goes wrong.
             Log.e(Utils.LOG, "An error occurred while destroying the service", ex);
@@ -205,7 +207,7 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
 
         runOnConnectionOrReject(callback, () -> {
             if (binder == null) {
-                callback.reject("playback", "The playback is not initialized");
+                rejectWithNotInitializedError(callback);
                 return;
             }
             binder.updateOptions(options);
@@ -219,7 +221,7 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
 
         runOnConnectionOrReject(callback, () -> {
             if (binder == null) {
-                callback.reject("playback", "The playback is not initialized");
+                rejectWithNotInitializedError(callback);
                 return;
             }
             List<Track> trackList;
@@ -263,7 +265,7 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
 
         runOnConnectionOrReject(callback, () -> {
             if (binder == null) {
-                callback.reject("playback", "The playback is not initialized");
+                rejectWithNotInitializedError(callback);
                 return;
             }
 
@@ -293,7 +295,7 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
     public synchronized void updateMetadataForTrack(String id, ReadableMap map, final Promise callback) {
         runOnConnectionOrReject(callback, () -> {
             if (binder == null) {
-                callback.reject("playback", "The playback is not initialized");
+                rejectWithNotInitializedError(callback);
                 return;
             }
             ExoPlayback playback = binder.getPlayback();
@@ -324,7 +326,7 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
     public synchronized void removeUpcomingTracks(final Promise callback) {
         runOnConnectionOrReject(callback, () -> {
             if (binder == null) {
-                callback.reject("playback", "The playback is not initialized");
+                rejectWithNotInitializedError(callback);
                 return;
             }
             binder.getPlayback().removeUpcomingTracks();
@@ -336,7 +338,7 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
     public synchronized void skip(final String track, final Promise callback) {
         runOnConnectionOrReject(callback, () -> {
             if (binder == null) {
-                callback.reject("playback", "The playback is not initialized");
+                rejectWithNotInitializedError(callback);
                 return;
             }
             binder.getPlayback().skip(track, callback);
@@ -347,7 +349,7 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
     public synchronized void skipToNext(final Promise callback) {
         runOnConnectionOrReject(callback, () -> {
             if (binder == null) {
-                callback.reject("playback", "The playback is not initialized");
+                rejectWithNotInitializedError(callback);
                 return;
             }
             binder.getPlayback().skipToNext(callback);
@@ -358,7 +360,7 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
     public synchronized void skipToPrevious(final Promise callback) {
         runOnConnectionOrReject(callback, () -> {
             if (binder == null) {
-                callback.reject("playback", "The playback is not initialized");
+                rejectWithNotInitializedError(callback);
                 return;
             }
             binder.getPlayback().skipToPrevious(callback);
@@ -369,7 +371,7 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
     public synchronized void reset(final Promise callback) {
         runOnConnectionOrReject(callback, () -> {
             if (binder == null) {
-                callback.reject("playback", "The playback is not initialized");
+                rejectWithNotInitializedError(callback);
                 return;
             }
             binder.getPlayback().reset();
@@ -381,7 +383,7 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
     public synchronized void play(final Promise callback) {
         runOnConnectionOrReject(callback, () -> {
             if (binder == null) {
-                callback.reject("playback", "The playback is not initialized");
+                rejectWithNotInitializedError(callback);
                 return;
             }
             binder.getPlayback().play();
@@ -393,7 +395,7 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
     public synchronized void pause(final Promise callback) {
         runOnConnectionOrReject(callback, () -> {
             if (binder == null) {
-                callback.reject("playback", "The playback is not initialized");
+                rejectWithNotInitializedError(callback);
                 return;
             }
             binder.getPlayback().pause();
@@ -405,7 +407,7 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
     public synchronized void stop(final Promise callback) {
         runOnConnectionOrReject(callback, () -> {
             if (binder == null) {
-                callback.reject("playback", "The playback is not initialized");
+                rejectWithNotInitializedError(callback);
                 return;
             }
             binder.getPlayback().stop();
@@ -417,7 +419,7 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
     public synchronized void seekTo(final float seconds, final Promise callback) {
         runOnConnectionOrReject(callback, () -> {
             if (binder == null) {
-                callback.reject("playback", "The playback is not initialized");
+                rejectWithNotInitializedError(callback);
                 return;
             }
             long secondsToSkip = Utils.toMillis(seconds);
@@ -430,7 +432,7 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
     public synchronized void setVolume(final float volume, final Promise callback) {
         runOnConnectionOrReject(callback, () -> {
             if (binder == null) {
-                callback.reject("playback", "The playback is not initialized");
+                rejectWithNotInitializedError(callback);
                 return;
             }
             binder.getPlayback().setVolume(volume);
@@ -457,7 +459,7 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
     public synchronized void setRate(final float rate, final Promise callback) {
         runOnConnectionOrReject(callback, () -> {
             if (binder == null) {
-                callback.reject("playback", "The playback is not initialized");
+                rejectWithNotInitializedError(callback);
                 return;
             }
             binder.getPlayback().setRate(rate);
@@ -610,7 +612,38 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
             callback.reject("unknown", "Unknown position");
         }
     }
-
+    
+    @ReactMethod
+    public synchronized void getCurrentTrackMeta(final Promise callback) {
+        // TODO Probably should just return null instead of rejection, but kept as it is a breaking change
+        if(isBinderReady()) {
+            binder.post(() -> {
+                int position;
+                Track track;
+                
+                if (binder == null) {
+                    position = C.POSITION_UNSET;
+                    track = null;
+                } else {
+                    position = (int) binder.getPlayback().getPosition();
+                    track = position != C.POSITION_UNSET ? binder.getPlayback().getCurrentTrack() : null;
+                }
+                
+                WritableMap data = Arguments.createMap();
+                data.putString("id", track != null ? track.id : null);
+                data.putInt("position", position);
+                
+                callback.resolve(data);
+            });
+        } else {
+            WritableMap data = Arguments.createMap();
+            data.putString("id",  null);
+            data.putInt("position", C.POSITION_UNSET);
+            callback.resolve(data);
+        }
+    }
+    
+    
     @ReactMethod
     public synchronized void getState(final Promise callback) {
         if(isBinderReady()) {
@@ -624,5 +657,9 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
         } else {
             callback.resolve(PlaybackStateCompat.STATE_NONE);
         }
+    }
+    
+    private void rejectWithNotInitializedError(final Promise callback) {
+        callback.reject(PLAYBACK_NOT_INITIALIZED_ERROR, PLAYBACK_NOT_INITIALIZED_MSG);
     }
 }
